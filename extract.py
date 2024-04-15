@@ -4,6 +4,8 @@ import nltk
 from nltk.corpus import stopwords
 import pandas as pd
 import warnings
+import os
+import sys
 
 warnings.filterwarnings('ignore')
 
@@ -40,6 +42,9 @@ class TextAnalyser:
             
             self.sentences = self.raw_text.split(".")
             self.words = self.raw_text.replace(".", "").split(" ")
+            
+            if not os.path.isdir("Data"):
+                os.mkdir("Data")
             
             with open(f"Data/{url_id}.txt", "w") as f:
                 f.write(self.raw_text)
@@ -175,6 +180,8 @@ class TextAnalyser:
         
         return [positive_count, negative_count, polarity_score, subjectivity_score]
     
+    
+    
 def perform_text_analysis(url, url_id):
     
     analyser = TextAnalyser(url, url_id)
@@ -209,10 +216,14 @@ if(__name__ == "__main__"):
             output = perform_text_analysis(url, url_id)
             main.loc[len(main.index)] = output
             cnt += 1
-            print(cnt)
-        except:
+            # print(url_id + " extract and processing completed")
+            sys.stdout.write(f"     {cnt} extracted and processed \r")
+            sys.stdout.flush()
+        except(Exception) as e:
+            print(e)
             error_cnt += 1
-            print(f"error cnt {error_cnt}")
+            print(f"Error at {url_id}\nerror cnt {error_cnt}")
         
     result = pd.concat([input_sheet, main], axis=1, join='inner')
     result.to_excel("output.xlsx")
+    print(f"Error count : {error_cnt}");
